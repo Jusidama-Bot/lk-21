@@ -128,7 +128,7 @@ class Bypass(BaseExtractor):
             'method_premium': '',
         }
 
-        response = self.session.post(url, headers=headers, data=data)
+        response = self.scraper.post(url, headers=headers, data=data)
         soup = self.soup(response)
 
         if (btn := soup.find(class_="btn btn-dow")):
