@@ -129,7 +129,7 @@ class Bypass(BaseExtractor):
         }
 
         response = self.scraper.post(url, headers=headers, data=data)
-        soup = self.soup(response)
+        soup = self.soup(response.text)
 
         if (btn := soup.find(class_="btn btn-dow")):
             return btn["href"]
