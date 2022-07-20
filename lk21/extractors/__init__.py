@@ -48,11 +48,11 @@ class BaseExtractor:
         Buat session baru
         """
         if is_cf:
-            session = create_scraper() 
+            session = create_scraper(interpreter="nodejs", allow_brotli=False)
         else:
             session = requests.Session()
             session.headers["User-Agent"] = "Mozilla/5.0 (Linux; Android 7.0; 5060 Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.83 Mobile Safari/537.36"
-        session.cookies = LWPCookieJar()
+            session.cookies = LWPCookieJar()
         return session
 
     def setProxies(self, proxy: str) -> None:
