@@ -10,7 +10,7 @@ install_requires = ['questionary', 'bs4', 'cloudscraper', 'lxml'
 entry_points = {'console_scripts': ['lk21 = lk21.cli:main']}
 
 setup(name='lk21',
-      version='1.6.2',
+      version='1.6.3',
       description='cari anime dan film subtitle Indonesia',
       author='Val',
       author_email='apklover76@gmail.com',
