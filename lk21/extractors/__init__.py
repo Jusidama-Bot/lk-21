@@ -1,6 +1,8 @@
 from urllib.parse import urlparse
 from http.cookiejar import LWPCookieJar
 from cloudscraper import create_scraper
+from typing import Union
+
 import requests
 import requests_cache
 import bs4
@@ -43,7 +45,7 @@ class BaseExtractor:
 
         self.MetaSet = MetaSet
 
-    def _build_session(self, is_cf: bool = False) -> requests.Session:
+    def _build_session(self, is_cf: bool = False) -> Union[requests.Session, create_scraper]:
         """
         Buat session baru
         """
