@@ -171,7 +171,7 @@ class BaseExtractor:
         """
 
         text = raw.text if hasattr(raw, "text") else raw
-        return bs4.BeautifulSoup(text, "html.parser")
+        return bs4.BeautifulSoup(text, "lxml")
 
     def getPath(self, url: str) -> str:
         """
