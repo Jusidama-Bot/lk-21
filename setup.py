@@ -5,7 +5,7 @@ from distutils.core import setup
 
 packages = ['lk21', 'lk21.extractors', 'lk21.thirdparty']
 package_data = {'': ['*']}
-install_requires = ['questionary', 'bs4',
+install_requires = ['questionary', 'bs4', 'cloudscraper',
                     'requests', 'requests-cache', 'colorama']
 entry_points = {'console_scripts': ['lk21 = lk21.cli:main']}
 
