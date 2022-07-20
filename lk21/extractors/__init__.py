@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 from http.cookiejar import LWPCookieJar
+from cloudscraper import create_scraper
 import requests
 import requests_cache
 import bs4
@@ -32,7 +33,8 @@ class BaseExtractor:
               args: 'argparse.Namespace'
         """
 
-        self.session = self._build_session()
+        self.session = self._build_session(is_cf=False)
+        self.scraper = self._build_session(is_cf=True)
         self.re = re
         self.logger = logger or logging
         self.args = args
@@ -41,12 +43,12 @@ class BaseExtractor:
 
         self.MetaSet = MetaSet
 
-    def _build_session(self) -> requests.Session:
+    def _build_session(self, is_cf: bool = False) -> requests.Session:
         """
         Buat session baru
         """
 
-        session = requests.Session()
+        session = create_scraper() if is_cf else requests.Session()
         session.headers[
             "User-Agent"] = "Mozilla/5.0 (Linux; Android 7.0; 5060 Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.83 Mobile Safari/537.36"
         session.cookies = LWPCookieJar()
