@@ -126,9 +126,9 @@ class Bypass(BaseExtractor):
         response = self.scraper.post(url, data=data)
         soup = self.soup(response)
 
-        if (btn := soup.find(class_="btn btn-dow")):
+        if (btn := soup.find("a", {"class": "btn btn-dow"})):
             return btn["href"]
-        if (unique := soup.find(id="uniqueExpirylink")):
+        if (unique := soup.find("a", {"id": "uniqueExpirylink"}):
             return unique["href"]
 
     def bypass_redirect(self, url):
