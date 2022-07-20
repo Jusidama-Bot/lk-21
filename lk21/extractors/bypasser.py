@@ -116,7 +116,7 @@ class Bypass(BaseExtractor):
 
         headers = {
             'content-type': 'application/x-www-form-urlencoded',
-            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.152 Safari/537.36',
+            'user-agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36',
         }
 
         data = {
@@ -129,7 +129,7 @@ class Bypass(BaseExtractor):
         }
 
         response = self.scraper.post(url, headers=headers, data=data)
-        soup = self.soup(response.text)
+        soup = self.soup(response)
 
         if (btn := soup.find(class_="btn btn-dow")):
             return btn["href"]
