@@ -128,7 +128,7 @@ class Bypass(BaseExtractor):
 
         if (btn := soup.find("a", {"class": "btn btn-dow"})):
             return btn["href"]
-        if (unique := soup.find("a", {"id": "uniqueExpirylink"}):
+        if (unique := soup.find("a", {"id": "uniqueExpirylink"})):
             return unique["href"]
 
     def bypass_redirect(self, url):
