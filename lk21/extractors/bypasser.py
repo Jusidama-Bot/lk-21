@@ -177,8 +177,9 @@ class Bypass(BaseExtractor):
 
         raw = self.session.get(url)
         soup = self.soup(raw)
-
-        if (dl := soup.find(id="downloadButton")):
+        soup = soup.find('div', {'class': 'download_link'})
+        dl = soup.find_all('a', href=True)[1]
+        if dl is not None:
             return dl["href"]
 
     def bypass_zippyshare(self, url):
