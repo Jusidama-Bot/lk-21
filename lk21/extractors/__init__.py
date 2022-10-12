@@ -43,6 +43,7 @@ class BaseExtractor:
         self.run_as_module = True
 
         self.MetaSet = MetaSet
+        global IS_CACHED
         if not IS_CACHED:
             if is_cache:
                 IS_CACHED = True
