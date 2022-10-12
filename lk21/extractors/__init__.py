@@ -61,7 +61,9 @@ class BaseExtractor:
         """
         if is_cf:
             if session:
-                session = create_scraper(sess=session, interpreter="nodejs", allow_brotli=False)
+                session = create_scraper(
+                    sess=session, interpreter="nodejs", allow_brotli=False
+                )
             else:
                 session = create_scraper(interpreter="nodejs", allow_brotli=False)
         else:
@@ -87,7 +89,6 @@ class BaseExtractor:
         """
         ubah :self: sebelum membuat permintaan
         """
-
 
     def dict_to_list(self, d: dict) -> list:
         """
