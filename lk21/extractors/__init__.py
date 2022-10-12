@@ -25,7 +25,7 @@ IS_CACHED = False
 
 
 class BaseExtractor:
-    def __init__(self, logger=None, args=None, is_cache: bool = False):
+    def __init__(self, logger=None, args=None, is_cache: bool = False, session=None):
         """
         Induk dari semua 'extractor'
 
@@ -34,8 +34,8 @@ class BaseExtractor:
               args: 'argparse.Namespace'
         """
 
-        self.session = self._build_session(is_cf=False)
-        self.scraper = self._build_session(is_cf=True)
+        self.session = self._build_session(session=session, is_cf=False)
+        self.scraper = self._build_session(session=session, is_cf=True)
         self.re = re
         self.logger = logger or logging
         self.args = args
@@ -54,15 +54,19 @@ class BaseExtractor:
             )
 
     def _build_session(
-        self, is_cf: bool = False
+        self, session=None, is_cf: bool = False
     ) -> Union[requests.Session, create_scraper]:
         """
         Buat session baru
         """
         if is_cf:
-            session = create_scraper(interpreter="nodejs", allow_brotli=False)
+            if session:
+                session = create_scraper(sess=session, interpreter="nodejs", allow_brotli=False)
+            else:
+                session = create_scraper(interpreter="nodejs", allow_brotli=False)
         else:
-            session = requests.Session()
+            if not session:
+                session = requests.Session()
             session.headers[
                 "User-Agent"
             ] = "Mozilla/5.0 (Linux; Android 7.0; 5060 Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.83 Mobile Safari/537.36"
