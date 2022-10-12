@@ -32,7 +32,8 @@ class Wibudesu(BaseExtractor):
 
         meta["image"] = content.img["data-lazy-src"]
         meta["judul"] = self.re.split(
-            "(?i)(?:bd )?(?:batch )?subtitle", soup.title.text)[0]
+            "(?i)(?:bd )?(?:batch )?subtitle", soup.title.text
+        )[0]
 
         return meta
 
@@ -54,7 +55,7 @@ class Wibudesu(BaseExtractor):
 
         result = {}
         for p in lexot.findAll("p")[1:]:
-            if (links := p.findAll("a")):
+            if links := p.findAll("a"):
                 title = p.strong.text
                 d = {}
                 for a in links:
@@ -71,19 +72,17 @@ class Wibudesu(BaseExtractor):
               page: indeks halaman web, type 'int'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}", params={
-            "s": query, "post_type": "post"})
+        raw = self.session.get(
+            f"{self.host}/page/{page}", params={"s": query, "post_type": "post"}
+        )
         soup = self.soup(raw)
 
         r = []
         for detpost in soup.findAll(class_="detpost"):
             a = detpost.find("a")
-            result = {
-                "title": a["title"],
-                "id": self.getPath(a["href"])
-            }
+            result = {"title": a["title"], "id": self.getPath(a["href"])}
 
-            if (morec := detpost.find(class_="morec")):
+            if morec := detpost.find(class_="morec"):
                 result["genre"] = [a.text for a in morec.findAll("a")]
 
             r.append(result)

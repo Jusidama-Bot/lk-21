@@ -19,7 +19,7 @@ class Otakudesu(BaseExtractor):
         raw = self.session.get(f"{self.host}/{id}")
         soup = self.soup(raw)
 
-        if (eps := soup.findAll(class_="episodelist")[1:]):
+        if eps := soup.findAll(class_="episodelist")[1:]:
             ch = {}
             for li in eps[0].findAll("li"):
                 ch[li.a.text] = li.a["href"]
@@ -49,15 +49,11 @@ class Otakudesu(BaseExtractor):
               page: indeks halaman web, type 'int'
         """
 
-        raw = self.session.get(self.host, params={
-            "s": query, "post_type": "Anime"})
+        raw = self.session.get(self.host, params={"s": query, "post_type": "Anime"})
         soup = self.soup(raw)
 
         result = []
-        if (ul := soup.find("ul", class_="chivsrc")):
+        if ul := soup.find("ul", class_="chivsrc"):
             for li in ul.findAll("li"):
-                result.append({
-                    "title": li.a.text,
-                    "id": self.getPath(li.a["title"])
-                })
+                result.append({"title": li.a.text, "id": self.getPath(li.a["title"])})
         return result

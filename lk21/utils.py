@@ -24,14 +24,15 @@ def _check_version():
         raw = base.session.get("https://pypi.org/project/lk21", timeout=2)
         soup = base.soup(raw)
 
-        if (name := soup.find(class_="package-header__name")):
+        if name := soup.find(class_="package-header__name"):
             version = name.text.split()[-1]
             if parse_version(__version__) < parse_version(version):
                 return (
                     "\x1b[93m"
                     f"WARNING: Anda menggunakan lk21 versi {__version__}, sedangkan versi {version} telah tersedia.\n"
                     "Anda harus mempertimbangkan untuk mengupgrade melalui perintah 'python -m pip install --upgrade lk21'."
-                    "\x1b[0m")
+                    "\x1b[0m"
+                )
     except Exception:
         return
 
@@ -75,17 +76,15 @@ class MetaSet(UserDict):
     def add(self, key: any, value: any, split: bool = True) -> None:
         key = re.sub(r" ", "_", key).lower()
         if isinstance(value, str):
-            value = re.split(r"\s*,\s+", value
-                             ) if split else [value]
+            value = re.split(r"\s*,\s+", value) if split else [value]
         if not value:
             return
         if len(value) == 1:
             value = value[0].strip()
-        if (pre := self.store.get(key)):
+        if pre := self.store.get(key):
             if not isinstance(pre, list):
                 self.store[key] = [pre]
-            self.store[key].extend(
-                [value] if not isinstance(value, list) else value)
+            self.store[key].extend([value] if not isinstance(value, list) else value)
         else:
             self.store[key] = value
 
@@ -94,7 +93,7 @@ class MetaSet(UserDict):
         Tambah item jika ditemukan
         """
 
-        if (value := re.search(self._pattern.format(id=id), self._content)):
+        if value := re.search(self._pattern.format(id=id), self._content):
             self.add(key or id, value.group(1), split)
 
     def pop(self, key, default=None, force=False):
@@ -111,8 +110,7 @@ def parse_range(raw):
             if ":" not in rg:
                 yield rg
             else:
-                assert len(re.findall(r":", raw)
-                           ) <= 1, f"invalid syntax: {raw!r}"
+                assert len(re.findall(r":", raw)) <= 1, f"invalid syntax: {raw!r}"
                 yield from parse_range(rg)
     else:
         spl = re.split(r"\s*:\s*", raw)

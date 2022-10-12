@@ -23,6 +23,7 @@ class BaseExtractorError(Exception):
 
 IS_CACHED = False
 
+
 class BaseExtractor:
     def __init__(self, logger=None, args=None, is_cache: bool = False):
         """
@@ -46,9 +47,15 @@ class BaseExtractor:
             if is_cache:
                 IS_CACHED = True
         if IS_CACHED:
-            requests_cache.install_cache(cache_name=os.path.expanduser('~/.lk21-requests-cache'), backend='sqlite', expire_after=90)
+            requests_cache.install_cache(
+                cache_name=os.path.expanduser("~/.lk21-requests-cache"),
+                backend="sqlite",
+                expire_after=90,
+            )
 
-    def _build_session(self, is_cf: bool = False) -> Union[requests.Session, create_scraper]:
+    def _build_session(
+        self, is_cf: bool = False
+    ) -> Union[requests.Session, create_scraper]:
         """
         Buat session baru
         """
@@ -56,7 +63,9 @@ class BaseExtractor:
             session = create_scraper(interpreter="nodejs", allow_brotli=False)
         else:
             session = requests.Session()
-            session.headers["User-Agent"] = "Mozilla/5.0 (Linux; Android 7.0; 5060 Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.83 Mobile Safari/537.36"
+            session.headers[
+                "User-Agent"
+            ] = "Mozilla/5.0 (Linux; Android 7.0; 5060 Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.83 Mobile Safari/537.36"
         session.cookies = LWPCookieJar()
         return session
 
@@ -75,7 +84,6 @@ class BaseExtractor:
         ubah :self: sebelum membuat permintaan
         """
 
-        pass
 
     def dict_to_list(self, d: dict) -> list:
         """
@@ -100,10 +108,7 @@ class BaseExtractor:
                     v = self.dict_to_list(data)
                 else:
                     v = self.host + "/" + id
-            list_.append({
-                "key": k.strip(),
-                "value": v
-            })
+            list_.append({"key": k.strip(), "value": v})
         return list_
 
     def extract_meta(self, id: str) -> dict:
@@ -150,18 +155,18 @@ class BaseExtractor:
 
         result = {}
         meta = self.extract_meta(id)
-        result["metadata"] = meta.store if isinstance(
-            meta, self.MetaSet) else meta
-        result["download"] = self.dict_to_list(
-            self.extract_data(id))
+        result["metadata"] = meta.store if isinstance(meta, self.MetaSet) else meta
+        result["download"] = self.dict_to_list(self.extract_data(id))
 
-        result.update({
-            "extractor": self.__class__.__name__,
-            "tag": self.tag,
-            "url": f"{self.host}/{id}",
-            "host": self.host,
-            "id": id,
-        })
+        result.update(
+            {
+                "extractor": self.__class__.__name__,
+                "tag": self.tag,
+                "url": f"{self.host}/{id}",
+                "host": self.host,
+                "id": id,
+            }
+        )
 
         return result
 
@@ -234,27 +239,29 @@ class BaseExtractor:
                 return choices[0]
 
             if otype == "list":
-                nch = {
-                    self._reformat(v): v for v in choices}
-                prompt = questionary.select(
-                    message=msg or "Pilih:",
-                    choices=nch.keys()
-                )
+                nch = {self._reformat(v): v for v in choices}
+                prompt = questionary.select(message=msg or "Pilih:", choices=nch.keys())
             elif otype == "checkbox":
                 choices = [
-                    {"name": self._reformat(k["name"], add_counter=False),
-                     "checked": k["checked"]} if isinstance(k, dict) else k
-                    for k in choices]
+                    {
+                        "name": self._reformat(k["name"], add_counter=False),
+                        "checked": k["checked"],
+                    }
+                    if isinstance(k, dict)
+                    else k
+                    for k in choices
+                ]
                 prompt = questionary.checkbox(
                     message=msg or "Pilih:",
                     choices=choices,
-                    validate=lambda x: "Pilihan tidak boleh kosong" if len(
-                        x) == 0 else True
+                    validate=lambda x: "Pilihan tidak boleh kosong"
+                    if len(x) == 0
+                    else True,
                 )
             else:
                 raise TypeError(f"{otype!r} is not allowed")
 
-            if (output := prompt.ask()):
+            if output := prompt.ask():
                 valid_id = re.compile(r" \(bypass\)$")
                 if isinstance(output, str):
                     return valid_id.sub("", nch[output])

@@ -17,28 +17,28 @@ class Kusonime(BaseExtractor):
         soup = self.soup(raw)
 
         alias = {
-            'japanese': "judul alternatif",
-            'seasons': 'musim',
-            'producers': 'produser',
-            'type': 'tipe',
-            'duration': 'durasi',
-            'released on': 'tayang'
+            "japanese": "judul alternatif",
+            "seasons": "musim",
+            "producers": "produser",
+            "type": "tipe",
+            "duration": "durasi",
+            "released on": "tayang",
         }
         meta = self.MetaSet()
         meta["image"] = soup.find(class_="wp-post-image")["src"]
         meta["judul"] = self.re.split(
-            "(?i)(?:bd )?(?:batch )?subtitle", soup.title.text)[0]
+            "(?i)(?:bd )?(?:batch )?subtitle", soup.title.text
+        )[0]
 
         content = soup.find(class_="info")
         for p in content.findAll("p"):
             if ":" not in p.text:
                 continue
-            k, v = map(lambda x: x.lower().strip(),
-                       self.re.split("\s*:\s*", p.text))
+            k, v = map(lambda x: x.lower().strip(), self.re.split("\s*:\s*", p.text))
             k = alias.get(k, k)
             meta.add(k, v, split=k not in ["score", "tayang"])
         content.decompose()
-        if (clear := soup.find(class_="clear")):
+        if clear := soup.find(class_="clear"):
             sinop = []
             for p in clear.findAllNext("p"):
                 if p.find("a"):
@@ -63,7 +63,9 @@ class Kusonime(BaseExtractor):
         soup = self.soup(raw)
 
         d = {}
-        for n, smokeddl in enumerate(soup.findAll("div", class_="smokeddl")[:-1], start=1):
+        for n, smokeddl in enumerate(
+            soup.findAll("div", class_="smokeddl")[:-1], start=1
+        ):
             title = f"{n}. " + smokeddl.find(class_="smokettl").text
             d[title] = {}
             for smokeurl in smokeddl.findAll(class_="smokeurl"):
@@ -86,16 +88,12 @@ class Kusonime(BaseExtractor):
               list: daftar item dalam bentuk 'dict'
         """
 
-        raw = self.session.get(self.host + f"/page/{page}/", params={
-            "s": query})
+        raw = self.session.get(self.host + f"/page/{page}/", params={"s": query})
         soup = self.soup(raw)
 
         result = []
         for item in soup.findAll("div", class_="content"):
-            d = {
-                "title": item.h2.text,
-                "id": self.getPath(item.a["href"])
-            }
+            d = {"title": item.h2.text, "id": self.getPath(item.a["href"])}
             for p in item.findAll("p"):
                 if "genre" in p.text:
                     d["genre"] = [a.text for a in p.findAll(p)]

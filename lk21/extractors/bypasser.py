@@ -22,9 +22,8 @@ class Bypass(BaseExtractor):
         raw = self.session.get(url)
         soup = self.soup(raw)
 
-        if (a := soup.find(class_="main-btn", href=True)):
-            return "{0.scheme}://{0.netloc}/{1}".format(
-              urlparse(url), a["href"])
+        if a := soup.find(class_="main-btn", href=True):
+            return "{0.scheme}://{0.netloc}/{1}".format(urlparse(url), a["href"])
 
     def bypass_ouo(self, url):
         """
@@ -60,7 +59,7 @@ class Bypass(BaseExtractor):
         raw = self.session.get(url)
         soup = self.soup(raw)
 
-        if (dlurl := soup.find(id="download-url")):
+        if dlurl := soup.find(id="download-url"):
             return dlurl["href"]
 
     def bypass_letsupload(self, url):
@@ -69,9 +68,11 @@ class Bypass(BaseExtractor):
         """
 
         raw = self.session.get(url)
-        if (fileId := re.search(r"(?i)showFileInformation\((\d+)\)", raw.text)):
-            return self.bypass_redirect('https://letsupload.io/account/direct_download/' + fileId.group(1))
-        if (nextUrl := re.search(r"window.location += ['\"]([^\"']+)", raw.text)):
+        if fileId := re.search(r"(?i)showFileInformation\((\d+)\)", raw.text):
+            return self.bypass_redirect(
+                "https://letsupload.io/account/direct_download/" + fileId.group(1)
+            )
+        if nextUrl := re.search(r"window.location += ['\"]([^\"']+)", raw.text):
             return nextUrl.group(1)
 
     def bypass_streamtape(self, url):
@@ -81,10 +82,10 @@ class Bypass(BaseExtractor):
 
         raw = self.session.get(url)
 
-        if (videolink := re.findall(r"document.*((?=id\=)[^\"']+)", raw.text)):
+        if videolink := re.findall(r"document.*((?=id\=)[^\"']+)", raw.text):
             nexturl = "https://streamtape.com/get_video?" + videolink[-1]
             self.report_bypass(nexturl)
-            if (redirect := self.bypass_redirect(nexturl)):
+            if redirect := self.bypass_redirect(nexturl):
                 return redirect
 
     def bypass_sbembed(self, url):
@@ -98,14 +99,18 @@ class Bypass(BaseExtractor):
 
         result = {}
         for a in soup.findAll("a", onclick=re.compile(r"^download_video[^h][^>]+")):
-            data = dict(zip(["id", "mode", "hash"], re.findall(
-                r"[\"']([^\"']+)[\"']", a["onclick"])))
+            data = dict(
+                zip(
+                    ["id", "mode", "hash"],
+                    re.findall(r"[\"']([^\"']+)[\"']", a["onclick"]),
+                )
+            )
             data["op"] = "download_orig"
 
             raw = self.session.get("https://sbembed.com/dl", params=data)
             soup = self.soup(raw)
 
-            if (direct := soup.find("a", text=re.compile("(?i)^direct"))):
+            if direct := soup.find("a", text=re.compile("(?i)^direct")):
                 result[a.text] = direct["href"]
         return result
 
@@ -115,20 +120,20 @@ class Bypass(BaseExtractor):
         """
 
         data = {
-            'op': 'download2',
-            'id': self.getPath(url),
-            'rand': '',
-            'referer': '',
-            'method_free': '',
-            'method_premium': '',
+            "op": "download2",
+            "id": self.getPath(url),
+            "rand": "",
+            "referer": "",
+            "method_free": "",
+            "method_premium": "",
         }
 
         response = self.scraper.post(url, data=data)
         soup = self.soup(response)
 
-        if (btn := soup.find("a", {"class": "btn btn-dow"})):
+        if btn := soup.find("a", {"class": "btn btn-dow"}):
             return btn["href"]
-        if (unique := soup.find("a", {"id": "uniqueExpirylink"})):
+        if unique := soup.find("a", {"id": "uniqueExpirylink"}):
             return unique["href"]
 
     def bypass_redirect(self, url):
@@ -145,7 +150,7 @@ class Bypass(BaseExtractor):
         """
 
         raw = self.session.get(url)
-        if (match := re.search(r"innerHTML\s*=\s*'([^']+)", raw.text)):
+        if match := re.search(r"innerHTML\s*=\s*'([^']+)", raw.text):
             raw = match.group(1)
             soup = self.soup(raw)
 
@@ -167,7 +172,7 @@ class Bypass(BaseExtractor):
         raw = self.session.get(url)
         soup = self.soup(raw)
 
-        if (a := soup.find("a", class_="btn-primary")):
+        if a := soup.find("a", class_="btn-primary"):
             return a["href"]
 
     def bypass_mediafire(self, url):
@@ -177,8 +182,8 @@ class Bypass(BaseExtractor):
 
         raw = self.session.get(url)
         soup = self.soup(raw)
-        soup = soup.find('div', {'class': 'download_link'})
-        dl = soup.find_all('a', href=True)[1]
+        soup = soup.find("div", {"class": "download_link"})
+        dl = soup.find_all("a", href=True)[1]
         if dl is not None:
             return dl["href"]
 
@@ -188,14 +193,20 @@ class Bypass(BaseExtractor):
         """
 
         raw = self.session.get(url)
-        if (dlbutton := re.search(r'href = "([^"]+)" \+ \(([^)]+)\) \+ "([^"]+)', raw.text)):
+        if dlbutton := re.search(
+            r'href = "([^"]+)" \+ \(([^)]+)\) \+ "([^"]+)', raw.text
+        ):
             folder, math_chall, filename = dlbutton.groups()
             math_chall = eval(math_chall)
             return "%s%s%s%s" % (
-                re.search(r"https?://[^/]+", raw.url).group(0), folder, math_chall, filename)
+                re.search(r"https?://[^/]+", raw.url).group(0),
+                folder,
+                math_chall,
+                filename,
+            )
 
         soup = self.soup(raw)
-        if (script := soup.find("script", text=re.compile("(?si)\s*var a = \d+;"))):
+        if script := soup.find("script", text=re.compile("(?si)\s*var a = \d+;")):
             sc = str(script)
             var = re.findall(r"var [ab] = (\d+)", sc)
             omg = re.findall(r"\.omg (!?=) [\"']([^\"']+)", sc)
@@ -207,12 +218,9 @@ class Bypass(BaseExtractor):
                 else:
                     a = math.floor(int(a) // 3)
                 divider = int(re.findall(f"(\d+)%b", sc)[0])
-                return re.search(r"(^https://www\d+.zippyshare.com)", raw.url).group(1) + \
-                    "".join([
-                        file[0],
-                        str(a + (divider % int(b))),
-                        file[1]
-                    ])
+                return re.search(r"(^https://www\d+.zippyshare.com)", raw.url).group(
+                    1
+                ) + "".join([file[0], str(a + (divider % int(b))), file[1]])
 
     def bypass_fembed(self, url):
         """
@@ -226,8 +234,7 @@ class Bypass(BaseExtractor):
         api = re.search(r"(/api/source/[^\"']+)", raw.text)
         if api is not None:
             result = {}
-            raw = self.session.post(
-                "https://layarkacaxxi.icu" + api.group(1)).json()
+            raw = self.session.post("https://layarkacaxxi.icu" + api.group(1)).json()
             for d in raw["data"]:
                 f = d["file"]
                 direct = self.bypass_redirect(f)
@@ -247,7 +254,7 @@ class Bypass(BaseExtractor):
         """
 
         self.host = "{0.scheme}://{0.netloc}".format(urlparse(url))
-        patterns = {k: v['pattern'] for k, v in self.bypassPattern.items()}
+        patterns = {k: v["pattern"] for k, v in self.bypassPattern.items()}
 
         previous = url
         stop = False
@@ -293,7 +300,7 @@ class Bypass(BaseExtractor):
         index = 0
         last = False
 
-        #selected_items = []
+        # selected_items = []
         while True:
             # if last is True:
             #    otype = "checkbox"
@@ -311,9 +318,11 @@ class Bypass(BaseExtractor):
             #   otype = "list"
 
             keys = [
-                f"{key} (bypass)" if isinstance(
-                    value, str) and self.allBypassPattern.search(value) else key
-                for key, value in result.items() if value
+                f"{key} (bypass)"
+                if isinstance(value, str) and self.allBypassPattern.search(value)
+                else key
+                for key, value in result.items()
+                if value
             ]
             if prevresult and index > 0:
                 keys.extend([questionary.Separator(), "00. Kembali"])
@@ -341,8 +350,7 @@ class Bypass(BaseExtractor):
                 last = True
 
         if hasattr(extractor, "host"):
-            prefix = re.compile(
-                "^(?:" + r"|".join([extractor.host, "re\:"]) + ")")
+            prefix = re.compile("^(?:" + r"|".join([extractor.host, "re\:"]) + ")")
             if prefix.search(result):
                 id = extractor.getPath(prefix.sub("", result))
                 logging.info(f"Mengekstrak link unduhan: {id}")
@@ -357,17 +365,17 @@ pattern = re.compile(r"regex *: *(.+)(?:\n|$)")
 for key, value in inspect.getmembers(Bypass):
     if key.startswith("bypass_") and key != "bypass_url":
         for urlPattern in pattern.findall(value.__doc__ or ""):
-            Bypass.bypassPattern[key]["pattern"].add(
-                re.compile(urlPattern)
-            )
+            Bypass.bypassPattern[key]["pattern"].add(re.compile(urlPattern))
             allBypassPattern.append(urlPattern)
-        if (allPattern := Bypass.bypassPattern.get(key)):
+        if allPattern := Bypass.bypassPattern.get(key):
             for rule in allPattern["pattern"]:
                 valid_regex = re.sub(
-                    r"\[.+?\][+*]\??|\\[a-zA-Z][+*]\??", "\[id\]", rule.pattern)
+                    r"\[.+?\][+*]\??|\\[a-zA-Z][+*]\??", "\[id\]", rule.pattern
+                )
                 valid_regex = re.sub(r"\.[*+]\??", "\[any\]", valid_regex)
                 for url in exrex.generate(valid_regex):
                     Bypass.bypassPattern[key]["support"].add(
-                        removeprefix(urlparse(url).netloc, "www."))
+                        removeprefix(urlparse(url).netloc, "www.")
+                    )
 
 Bypass.allBypassPattern = re.compile(r"|".join(allBypassPattern))

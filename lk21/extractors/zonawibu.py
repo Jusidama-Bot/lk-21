@@ -17,7 +17,7 @@ class Zonawibu(BaseExtractor):
         soup = self.soup(raw)
 
         meta = self.MetaSet()
-        if (infox := soup.find(class_="contentpost")):
+        if infox := soup.find(class_="contentpost"):
 
             alias = {
                 "english title": "judul_alternatif",
@@ -25,13 +25,14 @@ class Zonawibu(BaseExtractor):
                 "type": "tipe",
                 "episodes": "total_episode",
                 "producers": "produser",
-                "duration": "durasi"
+                "duration": "durasi",
             }
             for p in infox.findAll("p"):
                 if ":" not in p.text:
                     continue
-                k, v = map(lambda x: x.lower().strip(),
-                           self.re.split("\s*:\s*", p.text))
+                k, v = map(
+                    lambda x: x.lower().strip(), self.re.split("\s*:\s*", p.text)
+                )
                 k = alias.get(k, k)
                 if k == "sinopsis":
                     v = p.findNext("p").text
@@ -52,7 +53,7 @@ class Zonawibu(BaseExtractor):
         soup = self.soup(raw)
 
         result = {}
-        if (direct := soup.find("a", text="DIRECT DOWNLOAD")):
+        if direct := soup.find("a", text="DIRECT DOWNLOAD"):
             result[a.text] = a["href"]
 
         for dl in soup.findAll(class_="dl"):
@@ -76,17 +77,13 @@ class Zonawibu(BaseExtractor):
               page: indeks halaman web, type 'int'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}",
-                               params={"s": query})
+        raw = self.session.get(f"{self.host}/page/{page}", params={"s": query})
         soup = self.soup(raw)
 
         result = []
         for postlist in soup.findAll(class_="postlist"):
             a = postlist.a
-            r = {
-                "id": self.getPath(a["href"]),
-                "title": a.text
-            }
+            r = {"id": self.getPath(a["href"]), "title": a.text}
 
             for y in postlist.findAll(class_=self.re.compile(r"auth(?:mobile)?")):
                 if len(x := y.text.split(":")):

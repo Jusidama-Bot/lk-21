@@ -34,10 +34,13 @@ class Drivenime(BaseExtractor):
         meta.setItem("duration", "durasi")
         meta.setItem("genres", "genre")
 
-        meta["tayang"] = meta.pop(
-            "start", "?", force=True) + " - " + meta.pop("end", "?", force=True)
+        meta["tayang"] = (
+            meta.pop("start", "?", force=True)
+            + " - "
+            + meta.pop("end", "?", force=True)
+        )
 
-        if (sinop := content.find("h2", text="Sinopsis")):
+        if sinop := content.find("h2", text="Sinopsis"):
             s = []
             for p in sinop.findAllNext(["p", "h2"]):
                 if p.name != "p":
@@ -63,9 +66,7 @@ class Drivenime(BaseExtractor):
             if (p.find("a")) and "download" in p.text.lower():
                 break
         title = self.re.findall(r"(?s)a>\s*(\[[^>]+?\])\s*<", str(p))
-        return {
-            ttl: a["href"] for ttl, a in zip(title, p.findAll("a"))
-        }
+        return {ttl: a["href"] for ttl, a in zip(title, p.findAll("a"))}
 
     def search(self, query: str, page: int = 1) -> list:
         """
@@ -79,19 +80,15 @@ class Drivenime(BaseExtractor):
               list: daftar item dalam bentuk 'dict'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}", params={
-            "s": query})
+        raw = self.session.get(f"{self.host}/page/{page}", params={"s": query})
         soup = self.soup(raw)
 
         result = []
         for post in soup.findAll(class_="post"):
             a = post.find("a")
-            r = {
-                "title": a["title"],
-                "id": self.getPath(a["href"])
-            }
+            r = {"title": a["title"], "id": self.getPath(a["href"])}
 
-            if (genre := post.find(class_="theauthor")):
+            if genre := post.find(class_="theauthor"):
                 r["genre"] = [a.text for a in genre.findAll("a")]
 
             result.append(r)

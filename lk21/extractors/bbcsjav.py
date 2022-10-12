@@ -7,7 +7,7 @@ class Bbcsjav(BaseExtractor):
     required_proxy = True
 
     def getCode(self, text):
-        if (code := self.re.search(r"([A-Z]+-[0-9]+)", text)):
+        if code := self.re.search(r"([A-Z]+-[0-9]+)", text):
             return code.group()
 
     def extract_meta(self, id: str) -> dict:
@@ -31,7 +31,7 @@ class Bbcsjav(BaseExtractor):
             "release": "rilis",
             "duration": "durasi",
             "genres": "genre",
-            "quality": "kualitas"
+            "quality": "kualitas",
         }
         for p in info.findAll("p"):
             if ":" in p.text:
@@ -82,18 +82,19 @@ class Bbcsjav(BaseExtractor):
               page: indeks halaman web, type 'int'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}",
-                               params={"s": query})
+        raw = self.session.get(f"{self.host}/page/{page}", params={"s": query})
         soup = self.soup(raw)
 
         result = []
         for post_id in soup.findAll(id="post-ID"):
             a = post_id.a
             title = post_id.find(class_="title")
-            result.append({
-                "id": self.getPath(a["href"]),
-                "title": title.text.strip(),
-                "tag": [tag.text for tag in post_id.findAll(rel="tag")],
-                "code": self.getCode(title.text)
-            })
+            result.append(
+                {
+                    "id": self.getPath(a["href"]),
+                    "title": title.text.strip(),
+                    "tag": [tag.text for tag in post_id.findAll(rel="tag")],
+                    "code": self.getCode(title.text),
+                }
+            )
         return result

@@ -19,10 +19,9 @@ class Dramaindo(BaseExtractor):
         meta = self.MetaSet()
         meta["image"] = soup.find(class_="wp-post-image")["src"]
 
-        if (info := soup.find(class_="info-content")):
+        if info := soup.find(class_="info-content"):
             meta["judul"] = soup.find(class_="alter").text
-            meta["genre"] = [a.text for a in info.find(
-                class_="genxed").findAll("a")]
+            meta["genre"] = [a.text for a in info.find(class_="genxed").findAll("a")]
 
             alias = {
                 "Status": "status",
@@ -52,7 +51,7 @@ class Dramaindo(BaseExtractor):
         soup = self.soup(raw)
 
         result = {}
-        if (dlbox := soup.find(class_="dlbox")):
+        if dlbox := soup.find(class_="dlbox"):
             for li in dlbox.findAll("li"):
                 if not li.a:
                     continue
@@ -76,14 +75,15 @@ class Dramaindo(BaseExtractor):
               page: indeks halaman web, type 'int'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}",
-                               params={"s": query})
+        raw = self.session.get(f"{self.host}/page/{page}", params={"s": query})
         soup = self.soup(raw)
 
         result = []
         for article in soup.findAll("article"):
-            result.append({
-                "title": article.find(itemprop="headline").text,
-                "id": self.getPath(article.a["href"])
-            })
+            result.append(
+                {
+                    "title": article.find(itemprop="headline").text,
+                    "id": self.getPath(article.a["href"]),
+                }
+            )
         return result
