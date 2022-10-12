@@ -21,12 +21,10 @@ class BaseExtractorError(Exception):
     pass
 
 
-requests_cache.install_cache(cache_name=os.path.expanduser(
-    '~/.lk21-requests-cache'), backend='sqlite', expire_after=90)
-
+IS_CACHED = False
 
 class BaseExtractor:
-    def __init__(self, logger=None, args=None):
+    def __init__(self, logger=None, args=None, is_cache: bool = False):
         """
         Induk dari semua 'extractor'
 
@@ -44,6 +42,11 @@ class BaseExtractor:
         self.run_as_module = True
 
         self.MetaSet = MetaSet
+        if not IS_CACHED:
+            if is_cache:
+                IS_CACHED = True
+        if IS_CACHED:
+            requests_cache.install_cache(cache_name=os.path.expanduser('~/.lk21-requests-cache'), backend='sqlite', expire_after=90)
 
     def _build_session(self, is_cf: bool = False) -> Union[requests.Session, create_scraper]:
         """
