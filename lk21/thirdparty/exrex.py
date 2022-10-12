@@ -28,6 +28,7 @@ from random import choice, randint
 from types import GeneratorType
 
 from sys import version_info
+
 IS_PY3 = version_info[0] == 3
 IS_PY36_OR_GREATER = IS_PY3 and version_info[1] > 5
 
@@ -35,26 +36,26 @@ if IS_PY3:
     unichr = chr
 
 __all__ = (
-    'generate',
-    'CATEGORIES',
-    'count',
-    'parse',
-    'getone',
-    'sre_to_string',
-    'simplify'
+    "generate",
+    "CATEGORIES",
+    "count",
+    "parse",
+    "getone",
+    "sre_to_string",
+    "simplify",
 )
 
 CATEGORIES = {
     sre_parse.CATEGORY_SPACE: sorted(sre_parse.WHITESPACE),
     sre_parse.CATEGORY_DIGIT: sorted(sre_parse.DIGITS),
-    'category_any': [unichr(x) for x in range(32, 123)]
+    "category_any": [unichr(x) for x in range(32, 123)],
 }
 
 
 def _build_reverse_categories():
     reverse = {}
     for key, value in sre_parse.CATEGORIES.items():
-        if not hasattr(value[1], '__iter__'):
+        if not hasattr(value[1], "__iter__"):
             continue
 
         for vv in value[1]:
@@ -107,7 +108,7 @@ def _in(d):
             else:
                 ret.append(unichr(i[1]))
         elif i[0] == sre_parse.CATEGORY:
-            subs = CATEGORIES.get(i[1], [''])
+            subs = CATEGORIES.get(i[1], [""])
             if neg:
                 for char in subs:
                     try:
@@ -117,7 +118,7 @@ def _in(d):
             else:
                 ret.extend(subs)
         elif i[0] == sre_parse.NEGATE:
-            ret = list(CATEGORIES['category_any'])
+            ret = list(CATEGORIES["category_any"])
             neg = True
     return ret
 
@@ -131,16 +132,17 @@ def prods(orig, ran, items, limit, grouprefs):
                 ret = [o]
                 for _ in range(r):
                     ret = ggen(
-                        ret, _gen, items, limit=limit, count=False, grouprefs=grouprefs)
+                        ret, _gen, items, limit=limit, count=False, grouprefs=grouprefs
+                    )
                 for i in ret:
                     yield i
 
 
 def ggen(g1, f, *args, **kwargs):
     groupref = None
-    grouprefs = kwargs.get('grouprefs', {})
-    if 'groupref' in kwargs.keys():
-        groupref = kwargs.pop('groupref')
+    grouprefs = kwargs.get("grouprefs", {})
+    if "groupref" in kwargs.keys():
+        groupref = kwargs.pop("groupref")
     for a in g1:
         g2 = f(*args, **kwargs)
         if isinstance(g2, GeneratorType):
@@ -162,7 +164,7 @@ def _gen(d, limit=20, count=False, grouprefs=None):
     """docstring for _gen"""
     if grouprefs is None:
         grouprefs = {}
-    ret = ['']
+    ret = [""]
     strings = 0
     literal = False
     for i in d:
@@ -175,12 +177,12 @@ def _gen(d, limit=20, count=False, grouprefs=None):
             literal = True
             ret = mappend(ret, unichr(i[1]))
         elif i[0] == sre_parse.CATEGORY:
-            subs = CATEGORIES.get(i[1], [''])
+            subs = CATEGORIES.get(i[1], [""])
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         elif i[0] == sre_parse.ANY:
-            subs = CATEGORIES['category_any']
+            subs = CATEGORIES["category_any"]
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
@@ -210,15 +212,33 @@ def _gen(d, limit=20, count=False, grouprefs=None):
             if IS_PY36_OR_GREATER and i[0] == sre_parse.SUBPATTERN:
                 subexpr = i[1][3]
             if count:
-                strings = (
-                    strings or 1) * (sum(ggen([0], _gen, subexpr, limit=limit, count=True, grouprefs=grouprefs)) or 1)
-            ret = ggen(ret, _gen, subexpr, limit=limit, count=False,
-                       grouprefs=grouprefs, groupref=i[1][0])
+                strings = (strings or 1) * (
+                    sum(
+                        ggen(
+                            [0],
+                            _gen,
+                            subexpr,
+                            limit=limit,
+                            count=True,
+                            grouprefs=grouprefs,
+                        )
+                    )
+                    or 1
+                )
+            ret = ggen(
+                ret,
+                _gen,
+                subexpr,
+                limit=limit,
+                count=False,
+                grouprefs=grouprefs,
+                groupref=i[1][0],
+            )
         # ignore ^ and $
         elif i[0] == sre_parse.AT:
             continue
         elif i[0] == sre_parse.NOT_LITERAL:
-            subs = list(CATEGORIES['category_any'])
+            subs = list(CATEGORIES["category_any"])
             if unichr(i[1]) in subs:
                 subs.remove(unichr(i[1]))
             if count:
@@ -229,7 +249,7 @@ def _gen(d, limit=20, count=False, grouprefs=None):
         elif i[0] == sre_parse.ASSERT_NOT:
             pass
         else:
-            print('[!] cannot handle expression ' + repr(i))
+            print("[!] cannot handle expression " + repr(i))
 
     if count:
         if strings == 0 and literal:
@@ -248,16 +268,16 @@ def _randone(d, limit=20, grouprefs=None):
     if grouprefs is None:
         grouprefs = {}
     """docstring for _randone"""
-    ret = ''
+    ret = ""
     for i in d:
         if i[0] == sre_parse.IN:
             ret += choice(_in(i[1]))
         elif i[0] == sre_parse.LITERAL:
             ret += unichr(i[1])
         elif i[0] == sre_parse.CATEGORY:
-            ret += choice(CATEGORIES.get(i[1], ['']))
+            ret += choice(CATEGORIES.get(i[1], [""]))
         elif i[0] == sre_parse.ANY:
-            ret += choice(CATEGORIES['category_any'])
+            ret += choice(CATEGORIES["category_any"])
         elif i[0] == sre_parse.MAX_REPEAT or i[0] == sre_parse.MIN_REPEAT:
             if i[1][1] + 1 - i[1][0] >= limit:
                 min, max = i[1][0], i[1][0] + limit - 1
@@ -278,7 +298,7 @@ def _randone(d, limit=20, grouprefs=None):
         elif i[0] == sre_parse.AT:
             continue
         elif i[0] == sre_parse.NOT_LITERAL:
-            c = list(CATEGORIES['category_any'])
+            c = list(CATEGORIES["category_any"])
             if unichr(i[1]) in c:
                 c.remove(unichr(i[1]))
             ret += choice(c)
@@ -299,20 +319,20 @@ def sre_to_string(sre_obj, paren=True):
     :type sre_obj: list
     :rtype: str
     """
-    ret = u''
+    ret = ""
     for i in sre_obj:
         if i[0] == sre_parse.IN:
-            prefix = ''
+            prefix = ""
             if len(i[1]) and i[1][0][0] == sre_parse.NEGATE:
-                prefix = '^'
-            ret += u'[{0}{1}]'.format(prefix, sre_to_string(i[1], paren=paren))
+                prefix = "^"
+            ret += "[{0}{1}]".format(prefix, sre_to_string(i[1], paren=paren))
         elif i[0] == sre_parse.LITERAL:
             u = unichr(i[1])
-            ret += u if u not in sre_parse.SPECIAL_CHARS else '\\{0}'.format(u)
+            ret += u if u not in sre_parse.SPECIAL_CHARS else "\\{0}".format(u)
         elif i[0] == sre_parse.CATEGORY:
             ret += REVERSE_CATEGORIES[i[1]]
         elif i[0] == sre_parse.ANY:
-            ret += '.'
+            ret += "."
         elif i[0] == sre_parse.BRANCH:
             # TODO simplifications here
             parts = [sre_to_string(x, paren=paren) for x in i[1][1]]
@@ -321,61 +341,61 @@ def sre_to_string(sre_obj, paren=True):
             if i[1][0]:
                 if len(parts) == 1:
                     paren = False
-                prefix = ''
+                prefix = ""
             else:
-                prefix = '?:'
-            branch = '|'.join(parts)
+                prefix = "?:"
+            branch = "|".join(parts)
             if paren:
-                ret += '({0}{1})'.format(prefix, branch)
+                ret += "({0}{1})".format(prefix, branch)
             else:
-                ret += '{0}'.format(branch)
+                ret += "{0}".format(branch)
         elif i[0] == sre_parse.SUBPATTERN:
             subexpr = i[1][1]
             if IS_PY36_OR_GREATER and i[0] == sre_parse.SUBPATTERN:
                 subexpr = i[1][3]
             if i[1][0]:
-                ret += '({0})'.format(sre_to_string(subexpr, paren=False))
+                ret += "({0})".format(sre_to_string(subexpr, paren=False))
             else:
-                ret += '{0}'.format(sre_to_string(subexpr, paren=paren))
+                ret += "{0}".format(sre_to_string(subexpr, paren=paren))
         elif i[0] == sre_parse.NOT_LITERAL:
-            ret += '[^{0}]'.format(unichr(i[1]))
+            ret += "[^{0}]".format(unichr(i[1]))
         elif i[0] == sre_parse.MAX_REPEAT:
             if i[1][0] == i[1][1]:
-                range_str = '{{{0}}}'.format(i[1][0])
+                range_str = "{{{0}}}".format(i[1][0])
             else:
                 if i[1][0] == 0 and i[1][1] - i[1][0] == sre_parse.MAXREPEAT:
-                    range_str = '*'
+                    range_str = "*"
                 elif i[1][0] == 1 and i[1][1] - i[1][0] == sre_parse.MAXREPEAT - 1:
-                    range_str = '+'
+                    range_str = "+"
                 else:
-                    range_str = '{{{0},{1}}}'.format(i[1][0], i[1][1])
+                    range_str = "{{{0},{1}}}".format(i[1][0], i[1][1])
             ret += sre_to_string(i[1][2], paren=paren) + range_str
         elif i[0] == sre_parse.MIN_REPEAT:
             if i[1][0] == 0 and i[1][1] == sre_parse.MAXREPEAT:
-                range_str = '*?'
+                range_str = "*?"
             elif i[1][0] == 1 and i[1][1] == sre_parse.MAXREPEAT:
-                range_str = '+?'
+                range_str = "+?"
             elif i[1][1] == sre_parse.MAXREPEAT:
-                range_str = '{{{0},}}?'.format(i[1][0])
+                range_str = "{{{0},}}?".format(i[1][0])
             else:
-                range_str = '{{{0},{1}}}?'.format(i[1][0], i[1][1])
+                range_str = "{{{0},{1}}}?".format(i[1][0], i[1][1])
             ret += sre_to_string(i[1][2], paren=paren) + range_str
         elif i[0] == sre_parse.GROUPREF:
-            ret += '\\{0}'.format(i[1])
+            ret += "\\{0}".format(i[1])
         elif i[0] == sre_parse.AT:
             if i[1] == sre_parse.AT_BEGINNING:
-                ret += '^'
+                ret += "^"
             elif i[1] == sre_parse.AT_END:
-                ret += '$'
+                ret += "$"
         elif i[0] == sre_parse.NEGATE:
             pass
         elif i[0] == sre_parse.RANGE:
-            ret += '{0}-{1}'.format(unichr(i[1][0]), unichr(i[1][1]))
+            ret += "{0}-{1}".format(unichr(i[1][0]), unichr(i[1][1]))
         elif i[0] == sre_parse.ASSERT:
             if i[1][0]:
-                ret += '(?={0})'.format(sre_to_string(i[1][1], paren=False))
+                ret += "(?={0})".format(sre_to_string(i[1][1], paren=False))
             else:
-                ret += '{0}'.format(sre_to_string(i[1][1], paren=paren))
+                ret += "{0}".format(sre_to_string(i[1][1], paren=paren))
         elif i[0] == sre_parse.ASSERT_NOT:
             pass
         else:
@@ -404,7 +424,7 @@ def parse(s):
     if IS_PY3:
         r = sre_parse.parse(s, flags=U)
     else:
-        r = sre_parse.parse(s.decode('utf-8'), flags=U)
+        r = sre_parse.parse(s.decode("utf-8"), flags=U)
     return list(r)
 
 
@@ -434,6 +454,5 @@ def count(s, limit=20):
 
 
 def getone(regex_string, limit=20):
-    """Returns a random matching string to a given regular expression
-    """
+    """Returns a random matching string to a given regular expression"""
     return _randone(parse(regex_string), limit)

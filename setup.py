@@ -3,21 +3,28 @@
 
 from distutils.core import setup
 
-packages = ['lk21', 'lk21.extractors', 'lk21.thirdparty']
-package_data = {'': ['*']}
-install_requires = ['questionary', 'bs4', 'cloudscraper', 'lxml'
-                    'requests', 'requests-cache', 'colorama']
-entry_points = {'console_scripts': ['lk21 = lk21.cli:main']}
+packages = ["lk21", "lk21.extractors", "lk21.thirdparty"]
+package_data = {"": ["*"]}
+install_requires = [
+    "questionary",
+    "bs4",
+    "cloudscraper",
+    "lxml" "requests",
+    "requests-cache",
+    "colorama",
+]
+entry_points = {"console_scripts": ["lk21 = lk21.cli:main"]}
 
-setup(name='lk21',
-      version='1.6.4',
-      description='cari anime dan film subtitle Indonesia',
-      author='Val',
-      author_email='apklover76@gmail.com',
-      url='https://github.com/zevtyardt',
-      packages=packages,
-      package_data=package_data,
-      install_requires=install_requires,
-      entry_points=entry_points,
-      python_requires='>=3.8',
-      )
+setup(
+    name="lk21",
+    version="1.6.4",
+    description="cari anime dan film subtitle Indonesia",
+    author="Val",
+    author_email="apklover76@gmail.com",
+    url="https://github.com/zevtyardt",
+    packages=packages,
+    package_data=package_data,
+    install_requires=install_requires,
+    entry_points=entry_points,
+    python_requires=">=3.8",
+)

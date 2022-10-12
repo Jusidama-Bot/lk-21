@@ -5,7 +5,6 @@ from .options import ArgumentParser
 from .utils import parse_range, title, _check_version, removeprefix
 from . import __version__
 from urllib.parse import urlparse
-from pkg_resources import parse_version
 import threading
 import queue
 import logging
@@ -26,6 +25,7 @@ extractors = {
 }
 Bypasser = extractors.pop("bypass")(logging)
 
+
 class SearchAll(BaseExtractor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -34,7 +34,6 @@ class SearchAll(BaseExtractor):
         self.q = queue.Queue()
         self.lock = threading.Lock()
         self.result = []
-
 
     def extract_meta(self, id: str) -> dict:
         """
@@ -110,65 +109,74 @@ class SearchAll(BaseExtractor):
             eks = eks()
 
             try:
-               data = eks.search(query, page)
-            except Exception as e:
-               data = []
+                data = eks.search(query, page)
+            except Exception:
+                data = []
 
             for n, item in enumerate(data, start=1):
                 title = item["title"]
                 with self.lock:
                     if re.search(re.escape(query), title, re.I):
-                        self.result.append({
-                            "title": f"[{name}] {title}",
-                            "id": f"{name}:{item['id']}"
-                        })
+                        self.result.append(
+                            {"title": f"[{name}] {title}", "id": f"{name}:{item['id']}"}
+                        )
 
-                    print("\x1b[Ktotal item terkumpul %s item -> %s [%s/%s]" %
-                     (len(self.result), name, n,  len(data)), end="\r")
+                    print(
+                        "\x1b[Ktotal item terkumpul %s item -> %s [%s/%s]"
+                        % (len(self.result), name, n, len(data)),
+                        end="\r",
+                    )
 
             self.q.task_done()
+
 
 def main():
     global extractors
 
-    logging.info(f"""
+    logging.info(
+        f"""
   _____     ___  ____    _____    __
  |_   _|   |_  ||_  _|  / ___ `. /  |
    | |       | |_/ /   |_/___) | `| |
    | |   _   |  __'.    .'____.'  | |
   _| |__/ | _| |  \ \_ / /_____  _| |_
  |________||____||____||_______||_____| {__version__}
-    """)
+    """
+    )
 
     Bypasser.run_as_module = False
     _version_msg = _check_version()
 
-    parser = ArgumentParser(**{
-        "extractors": extractors,
-        "version_msg": _version_msg,
-    })
+    parser = ArgumentParser(
+        **{
+            "extractors": extractors,
+            "version_msg": _version_msg,
+        }
+    )
     args = parser.parse_args()
 
     if args.version:
         sys.exit(__version__)
 
     if args.list_bypass:
-        def add_color(x): return re.sub(
-            r"\[[^]]+\]", lambda p: f"\x1b[33m{p[0]}\x1b[0m", x)
+
+        def add_color(x):
+            return re.sub(r"\[[^]]+\]", lambda p: f"\x1b[33m{p[0]}\x1b[0m", x)
+
         for funcname, item in Bypasser.bypassPattern.items():
             logging.info(title(removeprefix(funcname, "bypass_"), rtn=True))
             for rule in item["pattern"]:
                 valid_url = re.sub(
-                    r"\[.+?\][+*]\??|\\[a-zA-Z][+*]\??", "\[id\]", rule.pattern)
+                    r"\[.+?\][+*]\??|\\[a-zA-Z][+*]\??", "\[id\]", rule.pattern
+                )
                 valid_url = re.sub(r"\.[*+]\??", "\[any\]", valid_url)
-                valid_url = re.sub(r"^https\??://",  "", valid_url)
+                valid_url = re.sub(r"^https\??://", "", valid_url)
                 for s in generate_strings(valid_url):
                     logging.info(f"  • {add_color(s)}")
         sys.exit(0)
     elif args.bypass:
         result = Bypasser.bypass_url(args.bypass)
-        logging.info(
-            f"\n{result}\n")
+        logging.info(f"\n{result}\n")
         if args._exec:
             os.system(args._exec.format(result))
         sys.exit(0)
@@ -190,7 +198,8 @@ def main():
     if getattr(extractor, "required_proxy", None) and not args.skip_proxy:
         if not args.proxy:
             parser.error(
-                f"{extractor.__class__.__name__} required arguments --proxy, or skip using the --skip-proxy argument if already using vpn")
+                f"{extractor.__class__.__name__} required arguments --proxy, or skip using the --skip-proxy argument if already using vpn"
+            )
     extractor.run_as_module = args.json or args.json_dump
 
     if not args.all and not extractor.tag and not args.debug:
@@ -207,19 +216,26 @@ def main():
         page = Range.__next__()
         cache = {page: extractor.search(query, page=page)}
         while not id:
-            print(
-                f"Mencari {query!r} -> {netloc} halaman {page}")
+            print(f"Mencari {query!r} -> {netloc} halaman {page}")
             logging.info(
-                f"Total item terkumpul: {sum(len(v) for v in cache.values())} item dari total {len(cache)} halaman")
+                f"Total item terkumpul: {sum(len(v) for v in cache.values())} item dari total {len(cache)} halaman"
+            )
             if not cache[page]:
                 sys.exit("Tidak ditemukan")
 
             if len(cache[page]) == 1:
                 response = f"1. " + cache[page][0]["title"]
             else:
-                response = extractor.choice([
-                    i['title'] for i in cache[page]] + [
-                    questionary.Separator(), "00. Kembali", "01. Lanjut", "02. Keluar"], reset_counter=False)
+                response = extractor.choice(
+                    [i["title"] for i in cache[page]]
+                    + [
+                        questionary.Separator(),
+                        "00. Kembali",
+                        "01. Lanjut",
+                        "02. Keluar",
+                    ],
+                    reset_counter=False,
+                )
             pgs = list(cache.keys())
             index = pgs.index(page)
             if response.endswith("Keluar"):
@@ -259,20 +275,27 @@ def main():
                 sys.exit(f"\n{result}\n")
             elif args.json_dump:
                 with open(args.json_dump, "w") as file:
-                    file.write(json.dumps(result, indent=2, default=lambda o: o.store
-                                          if isinstance(getattr(o, "store"), dict) else o.__dict__))
-                sys.exit(
-                    f"Menyimpan hasil unduhan kedalam file: {args.json_dump!r}")
+                    file.write(
+                        json.dumps(
+                            result,
+                            indent=2,
+                            default=lambda o: o.store
+                            if isinstance(getattr(o, "store"), dict)
+                            else o.__dict__,
+                        )
+                    )
+                sys.exit(f"Menyimpan hasil unduhan kedalam file: {args.json_dump!r}")
 
             # cetak informasi jika ada
             extractor.info(f"\n [\x1b[92m{r.pop('title')}\x1b[0m]")
             for k, v in result.get("metadata", {}).items():
                 extractor.info(
-                    f"   {k}: {', '.join(filter(lambda x: x, v)) if isinstance(v, list) else v}")
+                    f"   {k}: {', '.join(filter(lambda x: x, v)) if isinstance(v, list) else v}"
+                )
             extractor.info("")
 
             result = result.get("download", {})
-            dlurl = Bypasser.recursive_choice(extractor,  result)
+            dlurl = Bypasser.recursive_choice(extractor, result)
             url = Bypasser.bypass_url(dlurl)
 
             if args._exec:

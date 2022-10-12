@@ -49,8 +49,8 @@ class KDramaindo(BaseExtractor):
         soup = self.soup(raw)
 
         result = {}
-        if (dl := soup.find(class_="download")):
-            if (batch := dl.find(class_="batch_content")):
+        if dl := soup.find(class_="download"):
+            if batch := dl.find(class_="batch_content"):
                 r = {}
                 for p in batch.findAll("p"):
                     urls = {}
@@ -59,7 +59,7 @@ class KDramaindo(BaseExtractor):
                         a.decompose()
                     r[" ".join(p.text.split())] = urls
                 result["Batch"] = r
-            if (content := dl.find(class_="content")):
+            if content := dl.find(class_="content"):
                 for ul in content.findAll("ul"):
                     r = {}
                     for li in ul.findAll("li"):
@@ -79,15 +79,11 @@ class KDramaindo(BaseExtractor):
               page: indeks halaman web, type 'int'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}",
-                               params={"s": query})
+        raw = self.session.get(f"{self.host}/page/{page}", params={"s": query})
         soup = self.soup(raw)
 
         result = []
         for info in soup.findAll(class_="info-post"):
-            if (a := info.a):
-                result.append({
-                    "id": self.getPath(a["href"]),
-                    "title": a.text
-                })
+            if a := info.a:
+                result.append({"id": self.getPath(a["href"]), "title": a.text})
         return result

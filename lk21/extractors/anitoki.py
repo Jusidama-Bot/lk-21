@@ -17,9 +17,11 @@ class Anitoki(BaseExtractor):
         soup = self.soup(raw)
 
         meta = self.MetaSet()
-        if (sinop := soup.find(text=self.re.compile(r"Sinopsis[^>]+"))):
+        if sinop := soup.find(text=self.re.compile(r"Sinopsis[^>]+")):
             meta["sinopsis"] = " ".join(
-                p.text for p in sinop.findAllNext("p", style="text-align: justify;") if not p.span
+                p.text
+                for p in sinop.findAllNext("p", style="text-align: justify;")
+                if not p.span
             )
 
         return meta
@@ -58,15 +60,11 @@ class Anitoki(BaseExtractor):
               page: indeks halaman web, type 'int'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}",
-                               params={"s": query})
+        raw = self.session.get(f"{self.host}/page/{page}", params={"s": query})
         soup = self.soup(raw)
 
         result = []
         for kover in soup.findAll("div", class_="kover"):
             a = kover.a
-            result.append({
-                "id": self.getPath(a["href"]),
-                "title": a["title"]
-            })
+            result.append({"id": self.getPath(a["href"]), "title": a["title"]})
         return result

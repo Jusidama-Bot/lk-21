@@ -1,5 +1,6 @@
 from . import BaseExtractor
 
+
 class Nekopoi(BaseExtractor):
     tag = "hentai, JAV"
     host = "http://nekopoi.care"
@@ -44,15 +45,17 @@ class Nekopoi(BaseExtractor):
               page: indeks halaman web, type 'int'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}", params={"s": query}, verify=False, allow_redirects=True)
+        raw = self.session.get(
+            f"{self.host}/page/{page}",
+            params={"s": query},
+            verify=False,
+            allow_redirects=True,
+        )
         soup = self.soup(raw)
 
         result = []
-        if (res := soup.find(class_="result")):
+        if res := soup.find(class_="result"):
             for li in res.findAll("li"):
-                if (a := li.a):
-                    result.append({
-                        "title": a.text,
-                        "id": self.getPath(a["href"])
-                    })
+                if a := li.a:
+                    result.append({"title": a.text, "id": self.getPath(a["href"])})
         return result

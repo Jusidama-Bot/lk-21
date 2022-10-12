@@ -3,10 +3,7 @@
 __version__ = "1.6.4"
 __author__ = "Val"
 __license__ = "MIT"
-__all__ = [
-    "extractors",
-    "Bypass"
-]
+__all__ = ["extractors", "Bypass"]
 
 from .cli import main
 from .extractors.bypasser import Bypass

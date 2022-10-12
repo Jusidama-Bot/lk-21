@@ -22,7 +22,7 @@ class Meownime(BaseExtractor):
 
         meta = self.MetaSet()
         meta["image"] = soup.find(class_="wp-post-image")["src"]
-        if (content := soup.find(class_="entry-content")):
+        if content := soup.find(class_="entry-content"):
             meta.register(r"(?i){id} *: *(.+?)\n", content.text)
 
             meta.setItem("judul anime", "judul")
@@ -36,21 +36,20 @@ class Meownime(BaseExtractor):
             meta.setItem("durasi per episode", "durasi")
             meta.setItem("Skor di MyAnimeList", "score")
 
-        if (h2 := soup.find("h2", text=self.re.compile(r"Sinopsis[^>]+"))):
+        if h2 := soup.find("h2", text=self.re.compile(r"Sinopsis[^>]+")):
             desc = []
             for p in h2.findAllNext("p"):
                 if p.center:
                     break
                 desc.append(p.text)
             meta["sinopsis"] = " ".join(desc)
-        elif (ogDesc := soup.find(r"meta", property="og:description")):
+        elif ogDesc := soup.find(r"meta", property="og:description"):
             content = self.re.sub(r"\[[^]]+?]\s*$", "[^>]+", ogDesc["content"])
-            if (fullDesc := soup.find(text=self.re.compile(content))):
+            if fullDesc := soup.find(text=self.re.compile(content)):
                 meta["sinopsis"] = fullDesc
 
-        if (h2 := soup.find("h2", text="Main Character")):
-            meta["karakter"] = [
-                figure.text for figure in h2.findAllNext("figure")]
+        if h2 := soup.find("h2", text="Main Character"):
+            meta["karakter"] = [figure.text for figure in h2.findAllNext("figure")]
 
         return meta
 
@@ -72,9 +71,9 @@ class Meownime(BaseExtractor):
             if not table.strong:
                 continue
 
-            if (h4 := table.findPrevious("h4", style="text-align: center")):
+            if h4 := table.findPrevious("h4", style="text-align: center"):
                 eps = h4.text
-            elif (prevTable := table.findPrevious("table")):
+            elif prevTable := table.findPrevious("table"):
                 eps = prevTable.text
 
             d = {}
@@ -98,8 +97,7 @@ class Meownime(BaseExtractor):
               page: indeks halaman web, type 'int'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}", params={
-            "s": query})
+        raw = self.session.get(f"{self.host}/page/{page}", params={"s": query})
         soup = self.soup(raw)
 
         result = []
@@ -107,8 +105,5 @@ class Meownime(BaseExtractor):
             a = artikel.find("a")
             if not a.img:
                 continue
-            result.append({
-                "title": a["title"],
-                "id": self.getPath(a["href"])
-            })
+            result.append({"title": a["title"], "id": self.getPath(a["href"])})
         return result

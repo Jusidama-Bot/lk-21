@@ -23,7 +23,7 @@ class Anikyojin(BaseExtractor):
 
         meta = self.MetaSet()
         meta["image"] = soup.find(class_="wp-post-image")["src"]
-        if (infox := soup.find(class_="infox")):
+        if infox := soup.find(class_="infox"):
             meta.register(r"(?i){id}\s*:\s*([^>]+?) *?\n", infox.text)
 
             meta.setItem("judul")
@@ -37,7 +37,7 @@ class Anikyojin(BaseExtractor):
             meta.setItem("rating")
             meta.setItem("score", split=False)
 
-        if (sinop := soup.find(class_="sinop")):
+        if sinop := soup.find(class_="sinop"):
             meta["sinopsis"] = sinop.p.text
 
         return meta
@@ -79,18 +79,16 @@ class Anikyojin(BaseExtractor):
               list: daftar item dalam bentuk 'dict'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}", params={
-            "s": query, "post_type": "post"})
+        raw = self.session.get(
+            f"{self.host}/page/{page}", params={"s": query, "post_type": "post"}
+        )
         soup = self.soup(raw)
 
         r = []
         for article in soup.findAll(class_="artikel"):
             a = article.h2.find("a")
 
-            result = {
-                "title": a.text,
-                "id": self.getPath(a["href"])
-            }
+            result = {"title": a.text, "id": self.getPath(a["href"])}
 
             for li in article.find(class_="info").findAll("li"):
                 k, v = self.re.split(r"\s*:\s*", li.text)

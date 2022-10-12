@@ -19,16 +19,17 @@ class Melongmovie(BaseExtractor):
         meta = self.MetaSet()
         meta["image"] = soup.find(class_="wp-post-image")["src"]
         meta["judul"] = self.re.split(
-            "(?i)(?:bd )?(?:batch )?subtitle", soup.title.text)[0]
+            "(?i)(?:bd )?(?:batch )?subtitle", soup.title.text
+        )[0]
         alias = {
             "Country": "negara",
             "Quality": "kualitas",
             "Network": "jaringan",
             "Duration": "durasi",
             "Stars": "bintang film",
-            "Release": "rilis"
+            "Release": "rilis",
         }
-        if (ul := soup.find("ul", class_="data")):
+        if ul := soup.find("ul", class_="data"):
             for li in ul.findAll("li"):
                 k, v = self.re.split(r"\s*:\s*", li.text)
                 meta.add(alias.get(k, k), v)
@@ -53,7 +54,9 @@ class Melongmovie(BaseExtractor):
         soup = self.soup(raw)
 
         result = {}
-        for ep in soup.findAll(text=self.re.compile(r"(?i)episode\s+\d+|LINK DOWNLOAD")):
+        for ep in soup.findAll(
+            text=self.re.compile(r"(?i)episode\s+\d+|LINK DOWNLOAD")
+        ):
             content = ep.findNext("div")
             r = {}
             for p in content.findAll("p"):
@@ -82,15 +85,14 @@ class Melongmovie(BaseExtractor):
             result[ep.text] = r
 
         pattern = self.re.compile(r"[A-Z ]+:")
-        if (ref := soup.find("strong", text=pattern)):
+        if ref := soup.find("strong", text=pattern):
             for li in ref.findAllNext("li"):
                 sub = "/".join(strong.text for strong in li.findAll("strong"))
                 r = {}
                 for a in li.findAll("a"):
                     r[a.text] = a["href"]
 
-                title = li.findPrevious(
-                    "strong", text=pattern).text.strip(": \n")
+                title = li.findPrevious("strong", text=pattern).text.strip(": \n")
                 if not result.get(title):
                     result[title] = {}
                 result[title][sub] = r
@@ -108,24 +110,20 @@ class Melongmovie(BaseExtractor):
               list: daftar item dalam bentuk 'dict'
         """
 
-        raw = self.session.get(f"{self.host}/page/{page}",
-                               params={"s": query})
+        raw = self.session.get(f"{self.host}/page/{page}", params={"s": query})
         soup = self.soup(raw)
 
         result = []
-        if (los := soup.find(class_="los")):
+        if los := soup.find(class_="los"):
             for article in los.findAll("article"):
                 a = article.find("a")
-                r = {
-                    "id": self.getPath(a["href"]),
-                    "title": a["alt"]
-                }
+                r = {"id": self.getPath(a["href"]), "title": a["alt"]}
 
                 for k in ("quality", "eps"):
-                    if (i := article.find(class_=k)):
+                    if i := article.find(class_=k):
                         r[k] = i.text
                 for ip in ("genre", "name"):
-                    if (i := article.findAll(itemprop=ip)):
+                    if i := article.findAll(itemprop=ip):
                         r[ip] = [a.text for a in i]
                 result.append(r)
         return result

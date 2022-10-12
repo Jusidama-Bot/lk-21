@@ -52,10 +52,10 @@ class Riie(BaseExtractor):
         raw = self.session.get(f"{self.host}/{id}")
         soup = self.soup(raw)
 
-        if (eps := soup.findAll(id="episodes-list")):
+        if eps := soup.findAll(id="episodes-list"):
             lst = {}
             for ep in eps:
-                if (items := ep.findAll("li", class_="ep-item")):
+                if items := ep.findAll("li", class_="ep-item"):
                     title = ep.find(class_="gh-title").text
 
                     raw = {}
@@ -81,16 +81,13 @@ class Riie(BaseExtractor):
         soup = self.soup(raw)
 
         res = []
-        if (result := soup.find(class_="filter-result")):
+        if result := soup.find(class_="filter-result"):
             for ul in result.findAll("ul"):
                 for li in ul.findAll("li"):
                     a = li.find(class_="item-title").a
-                    r = {
-                        "id": self.getPath(a["href"]),
-                        "title": a.text
-                    }
+                    r = {"id": self.getPath(a["href"]), "title": a.text}
                     for kl in ("tv-type", "gr-eps", "gr-type", "gr-sub"):
-                        if (it := li.find(class_=kl)):
+                        if it := li.find(class_=kl):
                             r[kl] = it.text
                     res.append(r)
         return res
